@@ -1,10 +1,11 @@
 import itertools
+
 __author__ = 'danny'
 
 #Human helper - cheats
 NO_JUMP = -1
 
-class SubLeqInterpreter(object):
+class Cpu(object):
     def __init__(self, memory, pc):
         """Memory should be an array. Which is writable/readable is up to implementation.
         pc should be an offset into that memory. Memory word size, a, b and pc should be the same."""
@@ -111,16 +112,6 @@ def JMP(j):
     return [0, 0, j]
 
 
-#Get into git
-#Create a simple assembler
-#Add labels to assembler
-#Add macros to it
-
-class SubLeqAssembler(object):
-    """Simple subleq assembler
-    """
-
-
 
 def hello():
     #hello
@@ -150,7 +141,7 @@ def hello():
     mem.add_section(ram_start, ram)
     mem.add_section(prog_start, program)
 
-    cpu = SubLeqInterpreter(mem, prog_start)
+    cpu = Cpu(mem, prog_start)
     r = cpu.run()
     _ = [n for n in r]
     print [chr(n) for n in ram[0:5]]
@@ -177,7 +168,7 @@ def add12and13():
     mem.add_section(ram_start, ram)
     mem.add_section(prog_start, program)
 
-    cpu = SubLeqInterpreter(mem, prog_start)
+    cpu = Cpu(mem, prog_start)
     r = cpu.run()
     try:
         while True:
@@ -187,5 +178,6 @@ def add12and13():
 
     print "Result is ", mem[ram_start]
 
-hello()
-add12and13()
+if __name__ == "__main__":
+    hello()
+    add12and13()
