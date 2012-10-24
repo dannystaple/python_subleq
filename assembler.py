@@ -58,6 +58,24 @@ def render_code(first_pass, labels):
         output.extend(instruction)
     return output
 
+def render_parameterised_macro(line, name, body, params):
+    """Given a line known to contain the macro, and macro info,
+    Find the parameters, substitute and return"""
+    preamble, _, post = line.partition(name)
+    post = post.strip()
+    assert(post.startswith('('))
+    post = post[1:]
+    param_values, _, rest = post.partition(")")
+
+    param_values = [param.strip() for param in param_values.split(',')]
+    param_values = zip(params, param_values)
+
+    for param_name, param_value in param_values:
+        body = body.replace(param_name, param_value)
+
+    line = preamble + body + rest
+    return line
+
 def render_macros(line, macros):
     """Given a line of non-preprocessed code, and a list of macros, process macro expansions until done.
     NOTE: Ignore comments"""
@@ -65,8 +83,12 @@ def render_macros(line, macros):
         return line
     else:
         while [macro_name for macro_name in macros.keys() if macro_name in line]:
-            for macro_name, macro_body in macros.items():
-                line = line.replace(macro_name, macro_body)
+            for macro_name, macro_info in macros.items():
+                macro_body, params = macro_info
+                if params and macro_name in line:
+                    line = render_parameterised_macro(line, macro_name, macro_body, params)
+                else:
+                    line = line.replace(macro_name, macro_body)
         return line
 
 
@@ -80,12 +102,17 @@ def preprocessor(code):
     for line in lines:
         if line.startswith("#def begin"):
             macro_name = line.replace("#def begin", "").strip()
+            params = None
+            if " " in macro_name:
+                macro_name, _, params = macro_name.partition(" ")
+                params.split(",")
+                params = [param.strip() for param in params]
             macro_body = []
             line = lines.next()
             while not line.startswith("#def end"):
                 macro_body.append(line)
                 line = lines.next()
-            macros[macro_name] = "\n".join(macro_body)
+            macros[macro_name] = ("\n".join(macro_body), params)
         else:
             processed_lines.append(render_macros(line, macros))
     return "\n".join(processed_lines)

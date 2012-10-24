@@ -75,11 +75,43 @@ def test_basic_macro_defs():
     #def begin CLR
         subleq 0,0
     #def end
-    CLR
-    CLR
+
+        CLR
+        CLR
     """
     program = assemble(code)
     assert_equal(program, [
         0, 0, -1,
         0, 0, -1
+    ])
+
+def test_macro_recursion():
+    code = """
+    #def begin CLR
+        subleq 0,0
+    #def end
+    #def begin NEXT
+        CLR
+        subleq 1, 2
+    #def end
+
+        NEXT
+    """
+    program = assemble(code)
+    assert_equal(program, [
+        0, 0, -1,
+        1, 2, -1
+    ])
+
+def test_macro_parameter_substitution():
+    code = """
+    #def begin CLR a
+        subleq a, a
+    #def end
+
+        CLR(52)
+    """
+    program = assemble(code)
+    assert_equal(program, [
+        52, 52, -1,
     ])
