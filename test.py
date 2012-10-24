@@ -23,11 +23,31 @@ def test_incorrect_params():
     except TypeError:
         pass
 
-def test_multilines():
+def test_assembling_multilines():
     program = assemble("""
         subleq 2, 5, 7
         halt""")
     assert_equal(program, [2, 5, 7, -1, -1, -1])
+
+def test_it_should_allow_label_declarations():
+    program = assemble("""
+    start:    subleq 2, 5, 7
+        halt""")
+    assert_equal(program, [2, 5, 7, -1, -1, -1])
+
+def test_it_should_follow_label_refs():
+    code = """
+        subleq 0, 0
+    start: subleq 1, 1
+        subleq 0, 1, start
+        halt"""
+    program = assemble(code)
+    assert_equal(program, [
+        0, 0, -1,
+        1, 1, -1,
+        0, 1, 3,
+        -1, -1, -1
+    ])
 
 
 def test_running():

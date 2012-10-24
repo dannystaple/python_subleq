@@ -87,9 +87,14 @@ class Memory(object):
         for n in range(self.highest_mark):
             n = yield(self[n])
 
-def MOV(in_addr, out_addr):
+def CLW():
+    """Clear the work register"""
     return [
         0, 0, NO_JUMP,
+    ]
+
+def MOV(in_addr, out_addr):
+    return CLW + [
         out_addr, out_addr, NO_JUMP,
         in_addr, 0, NO_JUMP,
         0, out_addr, NO_JUMP,
@@ -102,8 +107,7 @@ def HALT():
 
 def ADD(a, b):
     """Synthesize b += a for subleq"""
-    return [
-        0, 0, NO_JUMP,
+    return CLW + [
         a, 0, NO_JUMP,
         0, b, NO_JUMP,
     ]
@@ -111,7 +115,14 @@ def ADD(a, b):
 def JMP(j):
     return [0, 0, j]
 
-
+#def JIND(aj):
+#    """Jump indirect - load the value at aj,
+#    use as address to jump to"""
+#    output = CLW +
+#    #Zero the work register
+#    #Sub the address from it (negative)
+#    #Sub the address from the j of the jump instruction
+#    #Sub the jump instruction address from work area, and jump.
 
 def hello():
     #hello
