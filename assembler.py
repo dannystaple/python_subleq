@@ -58,6 +58,39 @@ def render_code(first_pass, labels):
         output.extend(instruction)
     return output
 
+def render_macros(line, macros):
+    """Given a line of non-preprocessed code, and a list of macros, process macro expansions until done.
+    NOTE: Ignore comments"""
+    if line.startswith(";"):
+        return line
+    else:
+        while [macro_name for macro_name in macros.keys() if macro_name in line]:
+            for macro_name, macro_body in macros.items():
+                line = line.replace(macro_name, macro_body)
+        return line
+
+
+
+def preprocessor(code):
+    """Given the lines of code,
+    will preprocess it - defining macro's, and then rendering them out."""
+    macros = {} # name: expansion
+    lines = (line.strip() for line in code.splitlines())
+    processed_lines = []
+    for line in lines:
+        if line.startswith("#def begin"):
+            macro_name = line.replace("#def begin", "").strip()
+            macro_body = []
+            line = lines.next()
+            while not line.startswith("#def end"):
+                macro_body.append(line)
+                line = lines.next()
+            macros[macro_name] = "\n".join(macro_body)
+        else:
+            processed_lines.append(render_macros(line, macros))
+    return "\n".join(processed_lines)
+
+
 def assemble(code):
     """Given a string of code lines and the starting address (all labels relative to this),
     will output the list of assembled code"""
@@ -66,7 +99,8 @@ def assemble(code):
     # 1 Instructions/constants to numbers. Leave labels as strings
     # 2 Calculate address values
     # 3 Place address values in references, render to number code only
-    first_pass = instructions_to_numbers(code)
+    preprocessed = preprocessor(code)
+    first_pass = instructions_to_numbers(preprocessed)
     labels = calculate_labels(first_pass)
     output = render_code(first_pass, labels)
     return output

@@ -69,3 +69,17 @@ def test_it_should_ignore_comments():
         0, 1, 3,
         -1, -1, -1
     ])
+
+def test_basic_macro_defs():
+    code = """
+    #def begin CLR
+        subleq 0,0
+    #def end
+    CLR
+    CLR
+    """
+    program = assemble(code)
+    assert_equal(program, [
+        0, 0, -1,
+        0, 0, -1
+    ])
