@@ -115,3 +115,6 @@ def test_macro_parameter_substitution():
     assert_equal(program, [
         52, 52, -1,
     ])
+
+if __name__ == '__main__':
+    unittest.main()
